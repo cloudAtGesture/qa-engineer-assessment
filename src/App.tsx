@@ -8,9 +8,8 @@ import { Header } from "./components/Header";
 import { Todo } from "./interface";
 
 const Wrapper = styled.div({
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
+  display: "grid",
+  placeitems: "center",
   width: 300,
 });
 
@@ -22,7 +21,7 @@ const Wrapper = styled.div({
 * persistent storage.
 */
 
-const initialData: Todo[] = [
+export const initialData: Todo[] = [
   {
     id: uuid(),
     label: "Buy groceries",
