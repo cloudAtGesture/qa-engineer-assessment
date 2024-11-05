@@ -2,7 +2,7 @@ import  React  from 'react';
 import '@testing-library/jest-dom/extend-expect';
 import App, { initialData } from "./App";
 import { placeholderText } from './components/AddInput';
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { Todo } from "./interface";
 import { TodoItem } from "./components/TodoItem";
 import { userEvent } from '@testing-library/user-event';
@@ -119,29 +119,40 @@ describe('todo list functionality', () => {
   });
 
   describe('todo list item ordering', () => {
-    test('auto-sinking checked items', () => {
+    test('auto-sinking checked items', async () => {
       // render app
       render(<App />);
 
       // create test item text var
-      const testTodoItemText = 'test';
+      const testTodoItemText = 'Test';
 
       /// add item with text variable
       const textBox = screen.getByPlaceholderText(placeholderText);
 
-      // simulate text entry
-      userEvent.type(textBox, testTodoItemText);
+      //await userEvent.clear(textBox);
+      await userEvent.clear(textBox);
 
-      // simulate Enter/ return press
-      userEvent.keyboard('{Enter}');
+      // asynschronously simulate text entry
+      await userEvent.type(textBox, testTodoItemText, { delay: 50 });
 
-      // get new item
-      const testTodoItem = screen.getByRole('checkbox', {
-        name: testTodoItemText,
+      // asynschronously simulate enter/return press
+      await userEvent.keyboard('{Enter}');
+
+      // ensure the item has been added
+      await waitFor(() => {
+        expect(screen.getByText(testTodoItemText)).toBeInTheDocument();
       });
 
-      // simulate test item click (checkbox checked)
-      userEvent.click(testTodoItem);
+      // get new item
+      const testTodoItem = await screen.findByRole('checkbox', {
+        name: testTodoItemText,
+      });
+      
+      // get test item id for comparison
+      const testTodoItemId = testTodoItem.getAttribute('id');
+
+      // click to check the item
+      await userEvent.click(testTodoItem);
 
       // get all list item checkboxes in an arry
       const listCheckboxes = screen.getAllByRole('checkbox');
@@ -149,14 +160,12 @@ describe('todo list functionality', () => {
       // get last todo item on list
       const lastTodoItem = listCheckboxes[listCheckboxes.length - 1];
 
-      // get the accessible names
-      const testTodoItemLabel =
-        testTodoItem.getAttribute('aria-label') || testTodoItem.textContent;
-      const lastTodoItemLabel =
-        lastTodoItem.getAttribute('aria-label') || lastTodoItem.textContent;
+      // get last item id for comparison accessible names
+      const lastTodoItemId =
+        lastTodoItem.getAttribute('id');
 
       // check if the newly added todo item has moved to the bottom of the list
-      expect(testTodoItemLabel).toBe(lastTodoItemLabel);
+      expect(testTodoItemId).toBe(lastTodoItemId);
     });
   }); 
 });
