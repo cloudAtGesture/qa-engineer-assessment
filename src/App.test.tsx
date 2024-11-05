@@ -1,7 +1,7 @@
 import  React  from 'react';
 import '@testing-library/jest-dom/extend-expect';
-import { getMockedFunction } from './test-utils';
-import { initialData } from "./App";
+import App, { initialData } from "./App";
+import { placeholderText } from './components/AddInput';
 import { render, screen } from '@testing-library/react'
 import { Todo } from "./interface";
 import { TodoItem } from "./components/TodoItem";
@@ -80,46 +80,50 @@ describe('todo list functionality', () => {
   });
 
   describe('local storage tests', () => {
-    // initialize local storage mock
-    let localStorageMock = {};
-
-    // simulate local storage methods
-    beforeAll(() => {
-      global.Storage.prototype.setItem = jest.fn((key, value) => {
-        localStorageMock[key] = value;
-      });
-      global.Storage.prototype.getItem = jest.fn(
-        (key) => localStorageMock[key]
-      );
-    });
-
-    // resets our local storage mock
-    beforeEach(() => {
-      localStorageMock = {};
-    });
-
-    // resets mocks to original values (prevents future test pollution)
-    afterAll(() => {
-      getMockedFunction(global.Storage.prototype.setItem).mockReset();
-      getMockedFunction(global.Storage.prototype.getItem).mockReset();
-    });
-
     test('state persistence', () => {
-      // render app
+      // render app and store return unmount function
+      const { unmount } = render(<App />);
 
-      // check list state to ensure it contains initial items only
+      // create test item text var
+      const testTodoItem = 'test';
 
-      // add item
+      /// add item with text variable
+      const textBox = screen.getByPlaceholderText(placeholderText);
 
-      // re-render app
+      // simulate text entry
+      userEvent.type(textBox, testTodoItem);
 
-      // check list state to ensure it contains initial items plus added item
+      // simulate Enter/ return press
+      userEvent.keyboard('{Enter}');
+
+      // retrieve `todos` item from local storage
+      const todosFromStorage = JSON.parse(localStorage.getItem('todos'));
+
+      // check local storage for test item
+      expect(todosFromStorage).toContainEqual( // ? checks each item in the array of `todos`
+        expect.objectContaining({ label: testTodoItem }) // ? checks the `todoItem` label property  
+      );
+
+      // unmount the component
+      unmount();
+
+      // re-render the app
+      render(<App />);
+
+      // checkbox with test item name
+      const testCheckbox = screen.getByRole('checkbox', { name: testTodoItem });
+
+      // test item should be present post re-render
+      expect(testCheckbox).toBeDefined();
     });
   });
 
-
-
-  test('auto-sinking checked items', () => {});
+  test('auto-sinking checked items', () => {
+    // render list
+    // check unchecked item
+    // check order
+    // check added item
+  });
 });
 
 

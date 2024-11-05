@@ -18,6 +18,8 @@ export interface AddInputProps {
   onAdd: (label: string) => void;
 }
 
+export const placeholderText = "Add a new todo item here";
+
 export const AddInput: FC<AddInputProps> = ({ onAdd }) => {
   const [input, setInput] = useState("");
 
@@ -32,7 +34,7 @@ export const AddInput: FC<AddInputProps> = ({ onAdd }) => {
       <Input
         onChange={(e) => setInput(e.target.value)}
         value={input}
-        placeholder="Add a new todo item here"
+        placeholder={placeholderText}
       />
     </Form>
   );
