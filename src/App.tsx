@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { v4 as uuid } from "uuid";
 import styled from "@emotion/styled";
 import { AddInput } from "./components/AddInput";
@@ -24,23 +24,33 @@ const Wrapper = styled.div({
 export const initialData: Todo[] = [
   {
     id: uuid(),
-    label: "Buy groceries",
+    label: 'Buy groceries',
     checked: false,
   },
   {
     id: uuid(),
-    label: "Reboot computer",
+    label: 'Reboot computer',
     checked: false,
   },
   {
     id: uuid(),
-    label: "Ace CoderPad interview",
+    label: 'Ace CoderPad interview',
     checked: true,
   },
 ];
 
+const TODOS_LOCAL_STORAGE_KEY = "todos_data";
+
+
 function App() {
-  const [todos, setTodos] = useState<Todo[]>(initialData);
+  const [todos, setTodos] = useState((): Todo[] => {
+    const storedTodos = localStorage.getItem(TODOS_LOCAL_STORAGE_KEY);
+    return storedTodos ? JSON.parse(storedTodos) : initialData;
+  });
+
+  useEffect(() => {
+    localStorage.setItem(TODOS_LOCAL_STORAGE_KEY, JSON.stringify(todos));
+  }, [todos]);
 
   const addTodo = useCallback((label: string) => {
     setTodos((prev) => [
@@ -53,8 +63,32 @@ function App() {
     ]);
   }, []);
 
-  const handleChange = useCallback((checked: boolean) => {
-    // handle the check/uncheck logic
+  // checked is a boolean value that is passed to the TodoItem component: `e.target.checked`
+  const handleChange = useCallback((id: string, checked: boolean) => {
+    setTodos((prevTodos) => {
+      // map through todos to toggle the checked state
+      const updatedTodos = prevTodos.map((todo) =>
+        todo.id === id ? { ...todo, checked } : todo
+      );
+
+      if (checked) {
+        // find the checked item
+        const checkedItemIndex = updatedTodos.findIndex((todo) => todo.id === id);
+        const [checkedItem] = updatedTodos.splice(checkedItemIndex, 1);
+
+        // append the checked item to the end of the array
+        updatedTodos.push(checkedItem);
+      }
+
+      // sort to make sure unchecked are at the top and checked at the bottom
+      const sortedTodos = updatedTodos.sort((a, b) => {
+        if (a.checked && !b.checked) return 1;
+        if (!a.checked && b.checked) return -1;
+        return 0;
+      });
+
+      return sortedTodos;
+    });
   }, []);
 
   return (
