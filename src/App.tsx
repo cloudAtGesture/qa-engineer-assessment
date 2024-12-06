@@ -74,7 +74,7 @@ function App() {
     // optimistic update
     setTodos((prevTodos) => [
       {
-        id: id,
+        id,
         label,
         checked: false,
         firebaseId: '',

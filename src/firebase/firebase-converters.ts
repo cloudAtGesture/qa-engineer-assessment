@@ -5,6 +5,7 @@ import { DocumentData, SnapshotOptions, QueryDocumentSnapshot } from "firebase/f
 export const todoConverter = {
   toFirestore(todo: TodoDoc): DocumentData {
     return {
+      id: todo.id,
       label: todo.label,
       checked: todo.checked,
     };
