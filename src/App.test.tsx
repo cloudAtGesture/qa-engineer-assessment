@@ -2,8 +2,7 @@ import  React  from 'react';
 import '@testing-library/jest-dom/extend-expect';
 import App from "./App";
 import { placeholderText } from './components/AddInput';
-import { render, RenderResult, screen, waitFor } from '@testing-library/react'
-import { Todo } from "./interface";
+import { render, RenderResult, screen, waitFor , act} from '@testing-library/react'
 import { userEvent } from '@testing-library/user-event';
 
 interface AddTestItemResult {
@@ -18,15 +17,18 @@ const addTestItem = async (
   // add item with text variable
   const textBox = screen.getByPlaceholderText(placeholderText);
 
-  // simulate text entry and enter/return key press
-  await userEvent.type(textBox, label);
-  await userEvent.keyboard('{Enter}');
+  await act(async () => {
+    // simulate text entry and enter/return key press
+    await userEvent.type(textBox, label);
+    await userEvent.keyboard('{Enter}');
+  });
 
+  // get checkbox element
   const checkBox: HTMLInputElement = await screen.findByRole('checkbox', {
     name: label,
   });
 
-  // return new item data
+  // return added item data
   return {
     label,
     checkBox,
@@ -80,10 +82,12 @@ describe('todo list functionality', () => {
     test('via checkbox', async () => {
       // initial state check
       expect(testItemCheckBox.checked).toBe(initialCheckedStatus);
-      
-      // simulate user click event on the checkbox
-      await userEvent.click(testItemCheckBox);
-      
+
+      await act(async () => {
+        // simulate user click event on the checkbox
+        await userEvent.click(testItemCheckBox);
+      });
+
       // final state check
       expect(testItemCheckBox.checked).toBe(!initialCheckedStatus);
     });
@@ -97,18 +101,21 @@ describe('todo list functionality', () => {
       // initial state check
       expect(testItemCheckBox.checked).toBe(initialCheckedStatus);
 
-      // simulate user click event on the label (which toggles the checkbox)
-      await userEvent.click(labelText);
+      await act(async () => {
+        // simulate user click event on the label (which toggles the checkbox)
+        await userEvent.click(labelText);
+      });
 
       // final state check
       expect(testItemCheckBox.checked).toBe(!initialCheckedStatus);
     });
   });
 
+  // TODO: Update this test to use the new `TodoDoc` interface
   // describe('local storage tests', () => {
   //   let initialUnmount: RenderResult['unmount'];
-    
-  //   beforeEach(() => {  
+
+  //   beforeEach(() => {
   //     // render app
   //     const { unmount } = render(<App />);
 
@@ -137,7 +144,7 @@ describe('todo list functionality', () => {
   //         expect.objectContaining({ label: testTodoItemText })
   //       );
   //     });
-      
+
   //     // simulate refresh with new render
   //     initialUnmount();
   //     const { unmount } = render(<App />);
@@ -155,6 +162,7 @@ describe('todo list functionality', () => {
   //   });
   // });
 
+  // TODO: Update this test to use the new `TodoDoc` interface
   // describe('todo list item ordering', () => {
   //   test('auto-sinking checked items', async () => {
   //     // render app
@@ -184,7 +192,7 @@ describe('todo list functionality', () => {
   //     const testTodoItem = await screen.findByRole('checkbox', {
   //       name: testTodoItemText,
   //     });
-      
+
   //     // get test item id for comparison
   //     const testTodoItemId = testTodoItem.getAttribute('id');
 
@@ -205,5 +213,5 @@ describe('todo list functionality', () => {
   //       expect(testTodoItemId).toBe(lastTodoItemId);
   //     });
   //   });
-  // }); 
+  // });
 });

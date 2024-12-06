@@ -35,6 +35,7 @@ export interface TodoItemProps {
   id: string;
   label: string;
   checked: boolean;
+  firebaseId?: string
   onChange?: (id: string, checked: boolean) => void;
 }
 
